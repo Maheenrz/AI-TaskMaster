@@ -1,74 +1,21 @@
 import React, { useState } from 'react';
 import { Search, Plus, Filter, MoreHorizontal, CheckCircle, Clock, AlertTriangle, Edit3, Trash2, Star } from 'lucide-react';
+import { useTasks } from '../context/TasksProvider';
+import TaskForm from '../components/tasks/TaskForm';
 
 export default function Tasks() {
-  // Mock tasks data - replace with actual context data
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Design new landing page",
-      description: "Create a modern, responsive landing page with animations",
-      status: "completed",
-      priority: "high",
-      tags: ["design", "urgent"]
-    },
-    {
-      id: 2,
-      title: "Review pull requests",
-      description: "Check and approve pending code reviews",
-      status: "in-progress",
-      priority: "medium",
-      tags: ["development", "review"]
-    },
-    {
-      id: 3,
-      title: "Update documentation",
-      description: "Add new API endpoints to the documentation",
-      status: "pending",
-      priority: "low",
-      tags: ["docs"]
-    },
-    {
-      id: 4,
-      title: "Team standup meeting",
-      description: "Daily team sync and progress update",
-      status: "completed",
-      priority: "medium",
-      tags: ["meeting"]
-    },
-    {
-      id: 5,
-      title: "Fix critical bug in payment system",
-      description: "Resolve the issue with payment processing failures",
-      status: "pending",
-      priority: "high",
-      tags: ["bug", "urgent", "payment"]
-    }
-  ]);
-
+  // Get everything from context instead of managing separate state
+  const { tasks, loading, deleteTask, addTask, updateTask } = useTasks();
+  
+  console.log('Tasks component - tasks:', tasks);
+  console.log('Tasks component - loading:', loading);
+  console.log('Tasks component - addTask function:', typeof addTask);
+  
   const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState("add");
+  const [selectedTask, setSelectedTask] = useState(null);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTask, setSelectedTask] = useState(null);
-
-  // Update task status
-  const updateTaskStatus = (taskId, newStatus) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
-  };
-
-  // Update task priority
-  const updateTaskPriority = (taskId, newPriority) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, priority: newPriority } : task
-    ));
-  };
-
-  // Delete task
-  const deleteTask = (taskId) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
-  };
 
   // Filter tasks
   const filteredTasks = tasks.filter((task) => {
@@ -93,41 +40,76 @@ export default function Tasks() {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-[#FBF3D5] text-amber-700 border-[#D6DAC8]';
       default:
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-[#D6DAC8] text-green-700 border-[#9CAFAA]';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        return 'bg-[#D6DAC8] text-emerald-700 border-[#9CAFAA]';
       case 'in-progress':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+        return 'bg-[#FBF3D5] text-blue-700 border-[#D6DAC8]';
       default:
-        return 'bg-orange-100 text-orange-700 border-orange-200';
+        return 'bg-orange-50 text-orange-700 border-orange-200';
+    }
+  };
+
+  // Handle task status update
+  const updateTaskStatus = async (taskId, newStatus) => {
+    const task = tasks.find(t => t._id === taskId);
+    if (task) {
+      try {
+        await updateTask(taskId, task.title, task.description, task.priority, newStatus);
+      } catch (error) {
+        console.error('Failed to update task status:', error);
+      }
+    }
+  };
+
+  // Handle task priority update
+  const updateTaskPriority = async (taskId, newPriority) => {
+    const task = tasks.find(t => t._id === taskId);
+    if (task) {
+      try {
+        await updateTask(taskId, task.title, task.description, newPriority, task.status);
+      } catch (error) {
+        console.error('Failed to update task priority:', error);
+      }
+    }
+  };
+
+  // Handle task deletion
+  const handleDeleteTask = async (taskId) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await deleteTask(taskId);
+      } catch (error) {
+        console.error('Failed to delete task:', error);
+      }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-purple-50 to-indigo-100 pt-20 p-8">
+  <div className="min-h-screen w-full overflow-x-hidden bg-white pt-20 p-8">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">
+          <h1 className="text-4xl text-[#A0AA9A] font-bold text-slate-800 mb-2">
             Task Management ✨
           </h1>
-          <p className="text-slate-600 text-lg">
+          <p className="text-gray-500 text-lg">
             Organize, prioritize, and track your tasks efficiently
           </p>
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-purple-100 shadow-lg mb-8">
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 border border-[#D6DAC8] shadow-lg mb-8">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             
             {/* Search and Filters */}
@@ -139,7 +121,7 @@ export default function Tasks() {
                   placeholder="Search tasks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-[#D6DAC8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D6A99D] focus:border-transparent"
                 />
               </div>
               
@@ -148,7 +130,7 @@ export default function Tasks() {
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="pl-10 pr-8 py-3 bg-white border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 appearance-none"
+                  className="pl-10 pr-8 py-3 bg-white border border-[#D6DAC8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D6A99D] appearance-none"
                 >
                   <option value="all">All Tasks</option>
                   <option value="pending">Pending</option>
@@ -160,8 +142,12 @@ export default function Tasks() {
 
             {/* Add Task Button */}
             <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              onClick={() => {
+                setFormMode("add");
+                setSelectedTask(null);
+                setShowForm(true);
+              }}
+              className="flex items-center space-x-2 bg-[#A0AA9A] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-[#c49488]"
             >
               <Plus className="w-5 h-5" />
               <span>Add Task</span>
@@ -169,7 +155,7 @@ export default function Tasks() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-purple-100">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-[#D6DAC8]">
             <div className="text-center">
               <p className="text-2xl font-bold text-slate-800">{tasks.length}</p>
               <p className="text-sm text-slate-600">Total</p>
@@ -191,8 +177,13 @@ export default function Tasks() {
 
         {/* Task List */}
         <div className="space-y-4">
-          {filteredTasks.length === 0 ? (
-            <div className="text-center py-12 bg-white/80 backdrop-blur-xl rounded-3xl border border-purple-100">
+          {loading ? (
+            <div className="text-center py-12 bg-white/90 backdrop-blur-xl rounded-3xl border border-[#D6DAC8]">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#D6A99D] mx-auto"></div>
+              <p className="mt-4 text-slate-600">Loading tasks...</p>
+            </div>
+          ) : filteredTasks.length === 0 ? (
+            <div className="text-center py-12 bg-white/90 backdrop-blur-xl rounded-3xl border border-[#D6DAC8]">
               <div className="text-slate-400 mb-4">
                 <Star className="w-16 h-16 mx-auto" />
               </div>
@@ -202,8 +193,8 @@ export default function Tasks() {
           ) : (
             filteredTasks.map((task) => (
               <div
-                key={task.id}
-                className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                key={task._id}
+                className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 border border-[#D6DAC8] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
               >
                 <div className="flex items-start justify-between">
                   
@@ -220,16 +211,11 @@ export default function Tasks() {
                     
                     <p className="text-slate-600 mb-4">{task.description}</p>
                     
-                    {/* Tags */}
-                    <div className="flex items-center space-x-2 mb-4">
-                      {task.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                    {/* Created Date */}
+                    <div className="mb-4">
+                      <span className="px-3 py-1 bg-[#FBF3D5] text-slate-700 rounded-full text-sm font-medium border border-[#D6DAC8]">
+                        Created: {new Date(task.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
 
                     {/* Status and Priority Controls */}
@@ -237,9 +223,9 @@ export default function Tasks() {
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-medium text-slate-600">Status:</span>
                         <select
-                          value={task.status}
-                          onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-                          className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${getStatusColor(task.status)} focus:outline-none focus:ring-2 focus:ring-purple-300`}
+                          value={task.status || 'pending'}
+                          onChange={(e) => updateTaskStatus(task._id, e.target.value)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${getStatusColor(task.status || 'pending')} focus:outline-none focus:ring-2 focus:ring-[#D6A99D]`}
                         >
                           <option value="pending">Pending</option>
                           <option value="in-progress">In Progress</option>
@@ -251,8 +237,8 @@ export default function Tasks() {
                         <span className="text-sm font-medium text-slate-600">Priority:</span>
                         <select
                           value={task.priority}
-                          onChange={(e) => updateTaskPriority(task.id, e.target.value)}
-                          className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${getPriorityColor(task.priority)} focus:outline-none focus:ring-2 focus:ring-purple-300`}
+                          onChange={(e) => updateTaskPriority(task._id, e.target.value)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${getPriorityColor(task.priority)} focus:outline-none focus:ring-2 focus:ring-[#D6A99D]`}
                         >
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
@@ -265,18 +251,24 @@ export default function Tasks() {
                   {/* Action Buttons */}
                   <div className="flex items-center space-x-2 ml-4">
                     <button
-                      onClick={() => setSelectedTask(task)}
-                      className="p-2 text-purple-600 hover:bg-purple-50 rounded-xl transition-colors"
+                      onClick={() => {
+                        setSelectedTask(task);
+                        setFormMode("edit");
+                        setShowForm(true);
+                      }}
+                      className="p-2 text-[#9CAFAA] hover:bg-[#FBF3D5] rounded-xl transition-colors"
+                      title="Edit task"
                     >
                       <Edit3 className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => deleteTask(task.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                      onClick={() => handleDeleteTask(task._id)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                      title="Delete task"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
-                    <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors">
+                    <button className="p-2 text-[#9CAFAA] hover:bg-[#FBF3D5] rounded-xl transition-colors">
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
@@ -286,35 +278,23 @@ export default function Tasks() {
           )}
         </div>
 
-        {/* Task Form Modal (placeholder) */}
+        {/* Task Form Modal */}
         {showForm && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md border border-purple-100 shadow-2xl">
-              <h2 className="text-2xl font-bold text-slate-800 mb-6">Add New Task</h2>
-              {/* Add your task form here */}
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Task title..."
-                  className="w-full p-3 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300"
-                />
-                <textarea
-                  placeholder="Task description..."
-                  rows="3"
-                  className="w-full p-3 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
-                ></textarea>
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => setShowForm(false)}
-                    className="flex-1 px-4 py-2 border border-slate-300 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
-                    Add Task
-                  </button>
-                </div>
-              </div>
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowForm(false)}
+          >
+            <div 
+              className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md border border-[#D6DAC8] shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <TaskForm
+                mode={formMode}
+                task={selectedTask}
+                onClose={() => setShowForm(false)}
+                addTask={addTask}
+                updateTask={updateTask}
+              />
             </div>
           </div>
         )}
