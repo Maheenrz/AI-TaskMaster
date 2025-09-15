@@ -5,7 +5,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Analytics from './pages/Analytics'
 import PrivateRoute from './components/PrivateRoute'
-import './App.css'
+import './index.css'
 
 function App() {
   return (
