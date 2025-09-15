@@ -1,32 +1,32 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { TasksProvider } from "./context/TasksProvider"; // ✅
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp"
-import Tasks from "./pages/Tasks";
-import About from "./pages/About";
-import Landing from "./pages/Landing";
-import Navbar from "./components/common/Navbar";
-import "./App.css";
+import { Routes, Route } from 'react-router-dom'
+import Landing from './pages/Landing'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import Analytics from './pages/Analytics'
+import PrivateRoute from './components/PrivateRoute'
+import './App.css'
 
 function App() {
   return (
-      <Router>
-        <TasksProvider> 
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path ="/signup" element={<SignUp />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/about" element={<About />} />
-            <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-          </Routes>
-        </TasksProvider>
-      </Router>
-
-  );
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        } />
+        <Route path="/analytics" element={
+          <PrivateRoute>
+            <Analytics />
+          </PrivateRoute>
+        } />
+      </Routes>
+    </div>
+  )
 }
 
-export default App;
+export default App

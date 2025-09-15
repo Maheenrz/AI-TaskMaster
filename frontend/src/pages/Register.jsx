@@ -1,30 +1,44 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Brain, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Brain, User, Mail, Lock, ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import toast from 'react-hot-toast'
 
-const Login = () => {
+const Register = () => {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   
-  const { login } = useAuth()
+  const { register } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long')
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const result = await login(formData.email, formData.password)
+      const result = await register(formData.name, formData.email, formData.password)
       
       if (result.success) {
-        toast.success('Welcome back! 🚀')
+        toast.success('Welcome to AI TaskMaster! 🎉')
         navigate('/dashboard')
       } else {
         toast.error(result.error)
@@ -44,7 +58,7 @@ const Login = () => {
   }
 
   return (
-    <div className="galaxy-bg min-h-screen flex items-center justify-center px-6">
+    <div className="galaxy-bg min-h-screen flex items-center justify-center px-6 py-12">
       <div className="stars"></div>
       
       <div className="max-w-md w-full relative z-10">
@@ -62,8 +76,12 @@ const Login = () => {
               </div>
               <span className="text-2xl font-bold gradient-text">AI TaskMaster</span>
             </Link>
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-400">Sign in to your AI-powered workspace</p>
+            <div className="inline-flex items-center space-x-2 bg-purple-600/20 border border-purple-400/30 rounded-full px-4 py-2 mb-4">
+              <Sparkles className="h-4 w-4 text-purple-400 animate-pulse" />
+              <span className="text-purple-300 text-sm font-medium">Join the AI Revolution</span>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">Create Your Account</h1>
+            <p className="text-gray-400">Start your journey to AI-powered productivity</p>
           </div>
 
           {/* Form */}
@@ -74,6 +92,24 @@ const Login = () => {
             className="glass-card p-8"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="form-input pl-10"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Email Address
@@ -104,7 +140,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className="form-input pl-10 pr-10"
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     required
                   />
                   <button
@@ -115,18 +151,44 @@ const Login = () => {
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="form-input pl-10 pr-10"
+                    placeholder="Confirm your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full flex items-center justify-center space-x-2 text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full flex items-center justify-center space-x-2 text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed pulse-glow"
               >
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
-                    <span>Sign In</span>
+                    <span>Create Account</span>
                     <ArrowRight className="h-5 w-5" />
                   </>
                 )}
@@ -135,20 +197,27 @@ const Login = () => {
 
             <div className="mt-6 text-center">
               <p className="text-gray-400">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-purple-400 hover:text-purple-300 font-medium">
-                  Sign up here
+                Already have an account?{' '}
+                <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+                  Sign in here
                 </Link>
               </p>
             </div>
 
-            {/* Demo credentials */}
-            <div className="mt-6 p-4 bg-blue-600/10 border border-blue-400/20 rounded-lg">
-              <p className="text-sm text-blue-300 font-medium mb-2">Demo Account:</p>
-              <p className="text-xs text-blue-400">
-                Email: demo@taskmaster.ai<br />
-                Password: demo123
-              </p>
+            {/* Features preview */}
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center space-x-3 text-sm text-gray-300">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>AI-powered task analysis</span>
+              </div>
+              <div className="flex items-center space-x-3 text-sm text-gray-300">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>Smart productivity insights</span>
+              </div>
+              <div className="flex items-center space-x-3 text-sm text-gray-300">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span>Automated categorization</span>
+              </div>
             </div>
           </motion.div>
 
@@ -169,4 +238,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Register
