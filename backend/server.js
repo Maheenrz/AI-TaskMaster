@@ -3,22 +3,20 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 require('dotenv').config()
 
-// Import routes (you were missing these!)
 const authRoutes = require('./routes/auth')
-const taskRoutes = require('./routes/tasks')
+const taskRoutes = require('./routes/tasks') 
 const aiRoutes = require('./routes/ai')
 
 const app = express()
 
-//CORS middleware needed
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    process.env.FRONTEND_URL
+    process.env.FRONTEND_URL,
+    /\.vercel\.app$/
   ],
   credentials: true
 }))
-
 
 app.use(express.json({ limit: '10mb' }))
 
@@ -28,7 +26,15 @@ app.use('/api/tasks', taskRoutes)
 app.use('/api/ai', aiRoutes)
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'AI TaskMaster API is running!',
+    status: 'OK', 
+    timestamp: new Date().toISOString() 
+  })
+})
+
+app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() })
 })
 
@@ -47,16 +53,22 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' })
 })
 
-// MongoDB connection - Use MONGODB_URI not MONGO_URI
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch(err => console.error('❌ MongoDB connection failed:', err))
+// MongoDB connection
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ Connected to MongoDB'))
+    .catch(err => console.error('❌ MongoDB connection failed:', err))
+} else {
+  console.error('❌ MONGODB_URI not found in environment variables')
+}
 
-// Start server
-// const PORT = process.env.PORT || 5000
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running on port ${PORT}`)
-//   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
-// })
+const PORT = process.env.PORT || 5000
 
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`)
+  })
+}
+
+// CRITICAL: Export for Vercel
 module.exports = app
