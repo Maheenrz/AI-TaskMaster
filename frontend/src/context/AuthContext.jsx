@@ -1,24 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+// In your AuthContext.jsx, update this part:
+import { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
+require('dotenv').config()
 
 const AuthContext = createContext()
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+
+// Correct way to check for production
+const API_BASE_URL = import.meta.env.VITE_API_URL
+
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Set axios defaults
-  axios.defaults.baseURL = 'http://localhost:5000/api'
-
   useEffect(() => {
+    // Set axios defaults
+    axios.defaults.baseURL = API_BASE_URL
+    
     const token = localStorage.getItem('token')
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -39,59 +38,5 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  const login = async (email, password) => {
-    try {
-      const response = await axios.post('/auth/login', { email, password })
-      const { token, user } = response.data
-      
-      localStorage.setItem('token', token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      setUser(user)
-      
-      return { success: true }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
-      }
-    }
-  }
 
-  const register = async (name, email, password) => {
-    try {
-      const response = await axios.post('/auth/register', { name, email, password })
-      const { token, user } = response.data
-      
-      localStorage.setItem('token', token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      setUser(user)
-      
-      return { success: true }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
-      }
-    }
-  }
-
-  const logout = () => {
-    localStorage.removeItem('token')
-    delete axios.defaults.headers.common['Authorization']
-    setUser(null)
-  }
-
-  const value = {
-    user,
-    login,
-    register,
-    logout,
-    loading
-  }
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
 }
