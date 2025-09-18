@@ -103,7 +103,7 @@ const Register = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="form-input pl-10"
+                    className="form-input pl-12 pr-4"
                     placeholder="Enter your full name"
                     required
                   />
@@ -121,7 +121,7 @@ const Register = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="form-input pl-10"
+                    className="form-input pl-12 pr-4"
                     placeholder="Enter your email"
                     required
                   />
@@ -139,7 +139,7 @@ const Register = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="form-input pl-10 pr-10"
+                    className="form-input pl-12 pr-12"
                     placeholder="Create a password"
                     required
                   />
@@ -165,7 +165,7 @@ const Register = () => {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="form-input pl-10 pr-10"
+                    className="form-input pl-12 pr-12"
                     placeholder="Confirm your password"
                     required
                   />

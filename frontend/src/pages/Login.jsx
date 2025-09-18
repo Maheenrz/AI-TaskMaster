@@ -79,13 +79,13 @@ const Login = () => {
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 " />
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="form-input pl-10"
+                    className="form-input pl-12 pr-4"
                     placeholder="Enter your email"
                     required
                   />
@@ -103,7 +103,7 @@ const Login = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="form-input pl-10 pr-10"
+                    className="form-input pl-12 pr-12"
                     placeholder="Enter your password"
                     required
                   />
