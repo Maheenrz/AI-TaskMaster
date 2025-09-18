@@ -89,8 +89,12 @@ const AITaskAssistant = ({ tasks = [], onTaskAction }) => {
         throw new Error('No authentication token found')
       }
 
-      // Fixed API endpoint - removed the double /api
-      const response = await fetch('/api/ai/chat', {
+      // Use the correct backend URL
+      const baseURL = process.env.NODE_ENV === 'production' 
+        ? 'https://ai-task-master-abz-backend.vercel.app'
+        : '';
+      
+      const response = await fetch(`${baseURL}/api/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
